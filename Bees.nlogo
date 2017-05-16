@@ -266,7 +266,7 @@ sensitivity
 sensitivity
 1
 3
-1.0
+1.75
 0.25
 1
 NIL
@@ -362,13 +362,15 @@ Ants, Ant Lines, Fireflies, Flocking
 
 Adams, C.  (1989).  Why are moths attracted to bright lights?  Retrieved May 1, 2005, from http://www.straightdope.com/columns/read/1071/why-are-moths-attracted-to-bright-lights
 
+* Wilensky, U. (2005).  NetLogo Moths model.  http://ccl.northwestern.edu/netlogo/models/Moths.  Center for Connected Learning and Computer-Based Modeling, Northwestern University, Evanston, IL.
+
 ## HOW TO CITE
 
 If you mention this model or the NetLogo software in a publication, we ask that you include the citations below.
 
 For the model itself:
 
-* Wilensky, U. (2005).  NetLogo Moths model.  http://ccl.northwestern.edu/netlogo/models/Moths.  Center for Connected Learning and Computer-Based Modeling, Northwestern University, Evanston, IL.
+* Andrysek, O. Lyakhov, S. (20017).  NetLogo Bees model.  http://sstctf.org/models/Bees.  SST Capture the Flag Club, School of Science and Technology, Beaverton, OR.
 
 Please cite the NetLogo software as:
 
@@ -376,7 +378,8 @@ Please cite the NetLogo software as:
 
 ## COPYRIGHT AND LICENSE
 
-Copyright 2005 Uri Wilensky.
+Copyright (©) 2017 Otakar Andrysek and Stanislov Lyakhov.
+Copyright (©) 2005 Uri Wilensky.
 
 ![CC BY-NC-SA 3.0](http://ccl.northwestern.edu/images/creativecommons/byncsa.png)
 
@@ -384,7 +387,7 @@ This work is licensed under the Creative Commons Attribution-NonCommercial-Share
 
 Commercial licenses are also available. To inquire about commercial licenses, please contact Uri Wilensky at uri@northwestern.edu.
 
-<!-- 2005 -->
+<!-- 2017 -->
 @#$#@#$#@
 default
 true
