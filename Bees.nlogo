@@ -1,5 +1,6 @@
 breed [ flowers flower ]
 breed [ bees bee]
+breed [ beehives beehive]
 
 globals
 [
@@ -94,20 +95,21 @@ end
 to move-thru-field    ;; turtle procedure
   ifelse (light-level <= ( 1 / (10 * sensitivity) ))
   [
-    ;; if there is no detectable light move randomly
+    ;; if there are no detectable flowers -> move randomly
     rt flutter-amount 45
   ]
   [
     ifelse (random 25 = 0)
     ;; add some additional randomness to the moth's movement, this allows some small
-    ;; probability that the moth might "escape" from the light.
+    ;; probability that the bee might "escape" from the flower.
+    ;; TODO increase this value so that bees can leave the flower and go to the hive
     [
       rt flutter-amount 60
     ]
     [
-      ;; turn toward the brightest light
+      ;; turn toward the most attractive flower (as long as it is a reasonable distance away)
       maximize
-      ;; if the light ahead is not above the sensitivity threshold  head towards the light
+      ;; if the flower ahead is not above the sensitivity threshold head towards the flower
       ;; otherwise move randomly
       ifelse ( [light-level] of patch-ahead 1 / light-level > ( 1 + 1 / (10 * sensitivity) ) )
       [
@@ -134,9 +136,10 @@ to-report flutter-amount [limit]
   report random-float (2 * limit) - limit
 end
 
-
+; Copyright 2017 Otakar Andrysek and Stanislov Lyakhov
 ; Copyright 2005 Uri Wilensky.
-; See Info tab for full copyright and license.
+; See Info tab or GitHub repository for full copyright and license.
+; https://github.com/otakar-sst/bee-model
 @#$#@#$#@
 GRAPHICS-WINDOW
 280
@@ -223,7 +226,7 @@ number-flowers
 number-flowers
 0
 5
-2.0
+5.0
 1
 1
 NIL
