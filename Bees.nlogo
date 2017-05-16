@@ -1,17 +1,16 @@
-breed [ lights light ]
-breed [ moths moth ]
+breed [ flowers flower ]
+breed [ bees bee]
 
 globals
 [
   scale-factor  ;; to control the form of the light field
 ]
 
-lights-own
+flowers-own
 [
   intensity
 ]
-
-moths-own
+bees-own
 [
   ;; +1 means the moths turn to the right to try to evade a bright light
   ;; (and thus circle the light source clockwise). -1 means the moths
@@ -28,20 +27,20 @@ patches-own
 
 to setup
   clear-all
-  set-default-shape lights "circle 2"
-  set-default-shape moths "butterfly"
+  set-default-shape flowers "flower"
+  set-default-shape bees "bee 2"
   set scale-factor 50
-  if number-lights > 0
+  if number-flowers > 0
   [
-    make-lights number-lights
+    make-flowers number-flowers
     ask patches [ generate-field ]
   ]
-  make-moths number-moths
+  make-bees number-bees
   reset-ticks
 end
 
 to go
-  ask moths [ move-thru-field ]
+  ask bees [ move-thru-field ]
   tick
 end
 
@@ -49,17 +48,17 @@ end
 ;; Setup Procedures ;;
 ;;;;;;;;;;;;;;;;;;;;;;
 
-to make-lights [ number ]
-  create-lights number [
+to make-flowers [ number ]
+  create-flowers number [
     set color white
     jump 10 + random-float (max-pxcor - 30)
     set intensity random luminance + 20
-    set size sqrt intensity
+    set size 20
   ]
 end
 
-to make-moths [ number ]
-  create-moths number [
+to make-bees [ number ]
+  create-bees number [
     ifelse (random 2 = 0)
       [ set direction 1 ]
       [ set direction -1 ]
@@ -72,9 +71,9 @@ end
 to generate-field ;; patch procedure
   set light-level 0
   ;; every patch needs to check in with every light
-  ask lights
+  ask flowers
     [ set-field myself ]
-  set pcolor scale-color blue (sqrt light-level) 0.1 ( sqrt ( 20 * max [intensity] of lights ) )
+  ;;set pcolor scale-color blue (sqrt light-level) 0.1 ( sqrt ( 20 * max [intensity] of flowers ) )
 end
 
 ;; do the calculations for the light on one patch due to one light
@@ -220,8 +219,8 @@ SLIDER
 115
 138
 148
-number-lights
-number-lights
+number-flowers
+number-flowers
 0
 5
 2.0
@@ -235,11 +234,11 @@ SLIDER
 80
 226
 113
-number-moths
-number-moths
+number-bees
+number-bees
 1
 20
-10.0
+17.0
 1
 1
 NIL
@@ -269,7 +268,7 @@ turn-angle
 turn-angle
 45
 180
-105.0
+110.0
 5
 1
 degrees
@@ -388,6 +387,27 @@ arrow
 true
 0
 Polygon -7500403 true true 150 0 0 150 105 150 105 293 195 293 195 150 300 150
+
+bee 2
+true
+0
+Polygon -1184463 true false 195 150 105 150 90 165 90 225 105 270 135 300 165 300 195 270 210 225 210 165 195 150
+Rectangle -16777216 true false 90 165 212 185
+Polygon -16777216 true false 90 207 90 226 210 226 210 207
+Polygon -16777216 true false 103 266 198 266 203 246 96 246
+Polygon -6459832 true false 120 150 105 135 105 75 120 60 180 60 195 75 195 135 180 150
+Polygon -6459832 true false 150 15 120 30 120 60 180 60 180 30
+Circle -16777216 true false 105 30 30
+Circle -16777216 true false 165 30 30
+Polygon -7500403 true true 120 90 75 105 15 90 30 75 120 75
+Polygon -16777216 false false 120 75 30 75 15 90 75 105 120 90
+Polygon -7500403 true true 180 75 180 90 225 105 285 90 270 75
+Polygon -16777216 false false 180 75 270 75 285 90 225 105 180 90
+Polygon -7500403 true true 180 75 180 90 195 105 240 195 270 210 285 210 285 150 255 105
+Polygon -16777216 false false 180 75 255 105 285 150 285 210 270 210 240 195 195 105 180 90
+Polygon -7500403 true true 120 75 45 105 15 150 15 210 30 210 60 195 105 105 120 90
+Polygon -16777216 false false 120 75 45 105 15 150 15 210 30 210 60 195 105 105 120 90
+Polygon -16777216 true false 135 300 165 300 180 285 120 285
 
 box
 false
