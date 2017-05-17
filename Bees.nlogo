@@ -1,47 +1,58 @@
-breed [ lights light ]
-breed [ moths moth ]
+breed [ flowers flower ]
+breed [ bees bee]
+breed [ beehives beehive]
 
 globals
 [
   scale-factor  ;; to control the form of the light field
 ]
 
-lights-own
+flowers-own
 [
   intensity
+  caffenation
 ]
 
-moths-own
+bees-own
 [
-  ;; +1 means the moths turn to the right to try to evade a bright light
+  ;; +1 means the bees turn to the right to try to evade a bright light
   ;; (and thus circle the light source clockwise). -1 means the moths
   ;; turn to the left (and circle the light counter-clockwise)
-  ;; The direction tendency is assigned to each moth when it is created and does not
+  ;; The direction tendency is assigned to each bee when it is created and does not
   ;; change during the moth's lifetime.
   direction
 ]
 
+beehives-own
+[
+  capacity
+  visit-chance
+]
+
 patches-own
 [
-  light-level ;; represents the light energy from all light sources
+  ;; represents the total smell/attraction from all flower sources
+  total-flower-attraction
 ]
 
 to setup
   clear-all
-  set-default-shape lights "circle 2"
-  set-default-shape moths "butterfly"
+  set-default-shape flowers "flower"
+  set-default-shape bees "bee 2"
+  set-default-shape beehives "beehive1"
   set scale-factor 50
-  if number-lights > 0
+  if number-flowers > 0
   [
-    make-lights number-lights
+    make-flowers number-flowers
     ask patches [ generate-field ]
   ]
-  make-moths number-moths
+  make-bees number-bees
+  make-beehives 1
   reset-ticks
 end
 
 to go
-  ask moths [ move-thru-field ]
+  ask bees [ move-thru-field ]
   tick
 end
 
@@ -49,17 +60,17 @@ end
 ;; Setup Procedures ;;
 ;;;;;;;;;;;;;;;;;;;;;;
 
-to make-lights [ number ]
-  create-lights number [
+to make-flowers [ number ]
+  create-flowers number [
     set color white
     jump 10 + random-float (max-pxcor - 30)
     set intensity random luminance + 20
-    set size sqrt intensity
+    set size 20
   ]
 end
 
-to make-moths [ number ]
-  create-moths number [
+to make-bees [ number ]
+  create-bees number [
     ifelse (random 2 = 0)
       [ set direction 1 ]
       [ set direction -1 ]
@@ -69,23 +80,31 @@ to make-moths [ number ]
   ]
 end
 
-to generate-field ;; patch procedure
-  set light-level 0
-  ;; every patch needs to check in with every light
-  ask lights
-    [ set-field myself ]
-  set pcolor scale-color blue (sqrt light-level) 0.1 ( sqrt ( 20 * max [intensity] of lights ) )
+to make-beehives [ number ]
+  create-beehives number [
+    set color red
+    jump 10 + random-float (max-pxcor - 30)
+    set size 40
+  ]
 end
 
-;; do the calculations for the light on one patch due to one light
-;; which is proportional to the distance from the light squared.
+to generate-field ;; patch procedure
+  set total-flower-attraction 0
+  ;; every patch needs to check in with every flower
+  ask flowers
+    [ set-field myself ]
+  ;;set pcolor scale-color blue (sqrt total-flower-attraction) 0.1 ( sqrt ( 20 * max [intensity] of flowers ) )
+end
+
+;; do the calculations for the flower on one patch due to one flower
+;; which is proportional to the distance from the flower squared.
 to set-field [p]  ;; turtle procedure; input p is a patch
   let rsquared (distance p) ^ 2
   let amount intensity * scale-factor
   ifelse rsquared = 0
     [ set amount amount * 1000 ]
     [ set amount amount / rsquared ]
-  ask p [ set light-level light-level + amount ]
+  ask p [ set total-flower-attraction total-flower-attraction + amount ]
 end
 
 ;;;;;;;;;;;;;;;;;;;;;;;;
@@ -93,24 +112,25 @@ end
 ;;;;;;;;;;;;;;;;;;;;;;;;
 
 to move-thru-field    ;; turtle procedure
-  ifelse (light-level <= ( 1 / (10 * sensitivity) ))
+  ifelse (total-flower-attraction <= ( 1 / (10 * sensitivity) ))
   [
-    ;; if there is no detectable light move randomly
+    ;; if there are no detectable flowers -> move randomly
     rt flutter-amount 45
   ]
   [
     ifelse (random 25 = 0)
     ;; add some additional randomness to the moth's movement, this allows some small
-    ;; probability that the moth might "escape" from the light.
+    ;; probability that the bee might "escape" from the flower.
+    ;; Increase this value so that bees can leave the flower and go to the hive
     [
       rt flutter-amount 60
     ]
     [
-      ;; turn toward the brightest light
+      ;; turn toward the most attractive flower (as long as it is a reasonable distance away)
       maximize
-      ;; if the light ahead is not above the sensitivity threshold  head towards the light
+      ;; if the flower ahead is not above the sensitivity threshold head towards the flower
       ;; otherwise move randomly
-      ifelse ( [light-level] of patch-ahead 1 / light-level > ( 1 + 1 / (10 * sensitivity) ) )
+      ifelse ( [total-flower-attraction] of patch-ahead 1 / total-flower-attraction > ( 1 + 1 / (10 * sensitivity) ) )
       [
         lt ( direction * turn-angle )
       ]
@@ -125,7 +145,7 @@ to move-thru-field    ;; turtle procedure
 end
 
 to maximize  ;; turtle procedure
-  face max-one-of patches in-radius 1 [light-level]
+  face max-one-of patches in-radius 1 [total-flower-attraction]
 end
 
 to-report flutter-amount [limit]
@@ -135,9 +155,10 @@ to-report flutter-amount [limit]
   report random-float (2 * limit) - limit
 end
 
-
+; Copyright 2017 Otakar Andrysek and Stanislov Lyakhov
 ; Copyright 2005 Uri Wilensky.
-; See Info tab for full copyright and license.
+; See Info tab or GitHub repository for full copyright and license.
+; https://github.com/otakar-sst/bee-model
 @#$#@#$#@
 GRAPHICS-WINDOW
 280
@@ -220,11 +241,11 @@ SLIDER
 115
 138
 148
-number-lights
-number-lights
+number-flowers
+number-flowers
 0
 5
-2.0
+5.0
 1
 1
 NIL
@@ -235,11 +256,11 @@ SLIDER
 80
 226
 113
-number-moths
-number-moths
+number-bees
+number-bees
 1
 20
-10.0
+17.0
 1
 1
 NIL
@@ -254,7 +275,7 @@ sensitivity
 sensitivity
 1
 3
-2.0
+1.75
 0.25
 1
 NIL
@@ -269,7 +290,7 @@ turn-angle
 turn-angle
 45
 180
-105.0
+125.0
 5
 1
 degrees
@@ -350,13 +371,15 @@ Ants, Ant Lines, Fireflies, Flocking
 
 Adams, C.  (1989).  Why are moths attracted to bright lights?  Retrieved May 1, 2005, from http://www.straightdope.com/columns/read/1071/why-are-moths-attracted-to-bright-lights
 
+* Wilensky, U. (2005).  NetLogo Moths model.  http://ccl.northwestern.edu/netlogo/models/Moths.  Center for Connected Learning and Computer-Based Modeling, Northwestern University, Evanston, IL.
+
 ## HOW TO CITE
 
 If you mention this model or the NetLogo software in a publication, we ask that you include the citations below.
 
 For the model itself:
 
-* Wilensky, U. (2005).  NetLogo Moths model.  http://ccl.northwestern.edu/netlogo/models/Moths.  Center for Connected Learning and Computer-Based Modeling, Northwestern University, Evanston, IL.
+* Andrysek, O. Lyakhov, S. (20017).  NetLogo Bees model.  http://sstctf.org/models/Bees.  SST Capture the Flag Club, School of Science and Technology, Beaverton, OR.
 
 Please cite the NetLogo software as:
 
@@ -364,7 +387,8 @@ Please cite the NetLogo software as:
 
 ## COPYRIGHT AND LICENSE
 
-Copyright 2005 Uri Wilensky.
+Copyright (©) 2017 Otakar Andrysek and Stanislov Lyakhov.
+Copyright (©) 2005 Uri Wilensky.
 
 ![CC BY-NC-SA 3.0](http://ccl.northwestern.edu/images/creativecommons/byncsa.png)
 
@@ -372,132 +396,108 @@ This work is licensed under the Creative Commons Attribution-NonCommercial-Share
 
 Commercial licenses are also available. To inquire about commercial licenses, please contact Uri Wilensky at uri@northwestern.edu.
 
-<!-- 2005 -->
+<!-- 2017 -->
 @#$#@#$#@
 default
 true
 0
 Polygon -7500403 true true 150 5 40 250 150 205 260 250
 
-airplane
+bee 2
 true
 0
-Polygon -7500403 true true 150 0 135 15 120 60 120 105 15 165 15 195 120 180 135 240 105 270 120 285 150 270 180 285 210 270 165 240 180 180 285 195 285 165 180 105 180 60 165 15
+Polygon -1184463 true false 195 150 105 150 90 165 90 225 105 270 135 300 165 300 195 270 210 225 210 165 195 150
+Rectangle -16777216 true false 90 165 212 185
+Polygon -16777216 true false 90 207 90 226 210 226 210 207
+Polygon -16777216 true false 103 266 198 266 203 246 96 246
+Polygon -6459832 true false 120 150 105 135 105 75 120 60 180 60 195 75 195 135 180 150
+Polygon -6459832 true false 150 15 120 30 120 60 180 60 180 30
+Circle -16777216 true false 105 30 30
+Circle -16777216 true false 165 30 30
+Polygon -7500403 true true 120 90 75 105 15 90 30 75 120 75
+Polygon -16777216 false false 120 75 30 75 15 90 75 105 120 90
+Polygon -7500403 true true 180 75 180 90 225 105 285 90 270 75
+Polygon -16777216 false false 180 75 270 75 285 90 225 105 180 90
+Polygon -7500403 true true 180 75 180 90 195 105 240 195 270 210 285 210 285 150 255 105
+Polygon -16777216 false false 180 75 255 105 285 150 285 210 270 210 240 195 195 105 180 90
+Polygon -7500403 true true 120 75 45 105 15 150 15 210 30 210 60 195 105 105 120 90
+Polygon -16777216 false false 120 75 45 105 15 150 15 210 30 210 60 195 105 105 120 90
+Polygon -16777216 true false 135 300 165 300 180 285 120 285
 
-arrow
-true
-0
-Polygon -7500403 true true 150 0 0 150 105 150 105 293 195 293 195 150 300 150
+beehive1
+false
+3
+Rectangle -6459832 true true 15 135 285 270
+Rectangle -7500403 true false 0 105 300 135
+Line -16777216 false 15 240 285 240
+Rectangle -16777216 true false 120 240 180 255
 
-box
+beehive1super
+false
+3
+Rectangle -6459832 true true 15 195 150 300
+Rectangle -7500403 true false 0 180 165 195
+Line -16777216 false 15 285 150 285
+Rectangle -16777216 true false 60 285 105 300
+Line -16777216 false 15 225 150 225
+
+beehive2
+false
+3
+Rectangle -6459832 true true 15 30 285 270
+Rectangle -7500403 true false 0 0 300 30
+Line -16777216 false 15 240 285 240
+Rectangle -16777216 true false 120 240 180 255
+Line -16777216 false 15 135 285 135
+
+beehive2super
+false
+3
+Rectangle -6459832 true true 15 165 150 300
+Rectangle -7500403 true false 0 150 165 165
+Line -16777216 false 15 285 150 285
+Rectangle -16777216 true false 60 285 105 300
+Line -16777216 false 15 225 150 225
+Line -16777216 false 15 195 150 195
+
+beehive3super
+false
+3
+Rectangle -6459832 true true 15 135 150 300
+Rectangle -7500403 true false 0 120 165 135
+Line -16777216 false 15 285 150 285
+Rectangle -16777216 true false 60 285 105 300
+Line -16777216 false 15 225 150 225
+Line -16777216 false 15 195 150 195
+Line -16777216 false 15 165 150 165
+
+bumblebeenest
 false
 0
-Polygon -7500403 true true 150 285 285 225 285 75 150 135
-Polygon -7500403 true true 150 135 15 75 150 15 285 75
-Polygon -7500403 true true 15 75 15 225 150 285 150 135
-Line -16777216 false 150 285 150 135
-Line -16777216 false 150 135 15 75
-Line -16777216 false 150 135 285 75
+Circle -6459832 true false 135 105 90
+Circle -6459832 true false 15 135 90
+Circle -6459832 true false 150 180 90
+Circle -6459832 true false 75 150 90
+Circle -6459832 true false 90 210 90
+Circle -6459832 true false 195 120 90
+Circle -16777216 true false 45 136 42
+Circle -16777216 true false 109 151 42
+Circle -16777216 true false 166 181 42
+Circle -6459832 true false 15 195 90
 
-bug
-true
-0
-Circle -7500403 true true 96 182 108
-Circle -7500403 true true 110 127 80
-Circle -7500403 true true 110 75 80
-Line -7500403 true 150 100 80 30
-Line -7500403 true 150 100 220 30
-
-butterfly
-true
-0
-Polygon -7500403 true true 150 165 209 199 225 225 225 255 195 270 165 255 150 240
-Polygon -7500403 true true 150 165 89 198 75 225 75 255 105 270 135 255 150 240
-Polygon -7500403 true true 139 148 100 105 55 90 25 90 10 105 10 135 25 180 40 195 85 194 139 163
-Polygon -7500403 true true 162 150 200 105 245 90 275 90 290 105 290 135 275 180 260 195 215 195 162 165
-Polygon -16777216 true false 150 255 135 225 120 150 135 120 150 105 165 120 180 150 165 225
-Circle -16777216 true false 135 90 30
-Line -16777216 false 150 105 195 60
-Line -16777216 false 150 105 105 60
-
-car
+fadedflower
 false
 0
-Polygon -7500403 true true 300 180 279 164 261 144 240 135 226 132 213 106 203 84 185 63 159 50 135 50 75 60 0 150 0 165 0 225 300 225 300 180
-Circle -16777216 true false 180 180 90
-Circle -16777216 true false 30 180 90
-Polygon -16777216 true false 162 80 132 78 134 135 209 135 194 105 189 96 180 89
-Circle -7500403 true true 47 195 58
-Circle -7500403 true true 195 195 58
-
-circle
-false
-0
-Circle -7500403 true true 0 0 300
-
-circle 2
-false
-0
-Circle -7500403 true true 16 16 270
-Circle -16777216 true false 46 46 210
-
-cow
-false
-0
-Polygon -7500403 true true 200 193 197 249 179 249 177 196 166 187 140 189 93 191 78 179 72 211 49 209 48 181 37 149 25 120 25 89 45 72 103 84 179 75 198 76 252 64 272 81 293 103 285 121 255 121 242 118 224 167
-Polygon -7500403 true true 73 210 86 251 62 249 48 208
-Polygon -7500403 true true 25 114 16 195 9 204 23 213 25 200 39 123
-
-cylinder
-false
-0
-Circle -7500403 true true 0 0 300
-
-dot
-false
-0
-Circle -7500403 true true 90 90 120
-
-face happy
-false
-0
-Circle -7500403 true true 8 8 285
-Circle -16777216 true false 60 75 60
-Circle -16777216 true false 180 75 60
-Polygon -16777216 true false 150 255 90 239 62 213 47 191 67 179 90 203 109 218 150 225 192 218 210 203 227 181 251 194 236 217 212 240
-
-face neutral
-false
-0
-Circle -7500403 true true 8 7 285
-Circle -16777216 true false 60 75 60
-Circle -16777216 true false 180 75 60
-Rectangle -16777216 true false 60 195 240 225
-
-face sad
-false
-0
-Circle -7500403 true true 8 8 285
-Circle -16777216 true false 60 75 60
-Circle -16777216 true false 180 75 60
-Polygon -16777216 true false 150 168 90 184 62 210 47 232 67 244 90 220 109 205 150 198 192 205 210 220 227 242 251 229 236 206 212 183
-
-fish
-false
-0
-Polygon -1 true false 44 131 21 87 15 86 0 120 15 150 0 180 13 214 20 212 45 166
-Polygon -1 true false 135 195 119 235 95 218 76 210 46 204 60 165
-Polygon -1 true false 75 45 83 77 71 103 86 114 166 78 135 60
-Polygon -7500403 true true 30 136 151 77 226 81 280 119 292 146 292 160 287 170 270 195 195 210 151 212 30 166
-Circle -16777216 true false 215 106 30
-
-flag
-false
-0
-Rectangle -7500403 true true 60 15 75 300
-Polygon -7500403 true true 90 150 270 90 90 30
-Line -7500403 true 75 135 90 135
-Line -7500403 true 75 45 90 45
+Polygon -6459832 true false 75 195 165 165 180 210 180 240 150 300 165 300 195 240 195 195 165 135
+Circle -7500403 true true 10 252 38
+Circle -7500403 true true 70 132 38
+Circle -7500403 true true 102 175 38
+Circle -7500403 true true 87 237 38
+Circle -7500403 true true -5 145 38
+Circle -7500403 true true 6 156 108
+Circle -16777216 true false 23 173 74
+Polygon -6459832 true false 189 233 210 225 240 225 225 285 210 240
+Polygon -6459832 true false 180 240 150 240 105 240 90 285 120 255
 
 flower
 false
@@ -516,6 +516,52 @@ Circle -16777216 true false 113 68 74
 Polygon -10899396 true false 189 233 219 188 249 173 279 188 234 218
 Polygon -10899396 true false 180 255 150 210 105 210 75 240 135 240
 
+flowerorange
+false
+0
+Polygon -10899396 true false 135 120 165 165 180 210 180 240 150 300 165 300 195 240 195 195 165 135
+Circle -7500403 true true 85 132 38
+Circle -7500403 true true 130 147 38
+Circle -7500403 true true 192 85 38
+Circle -7500403 true true 85 40 38
+Circle -7500403 true true 177 40 38
+Circle -7500403 true true 177 132 38
+Circle -7500403 true true 70 85 38
+Circle -7500403 true true 130 25 38
+Circle -7500403 true true 96 51 108
+Circle -955883 true false 113 68 74
+Polygon -10899396 true false 189 233 219 188 249 173 279 188 234 218
+Polygon -10899396 true false 180 255 150 210 105 210 75 240 135 240
+
+honeyjar
+false
+15
+Circle -1184463 true false 39 69 42
+Circle -1184463 true false 219 69 42
+Circle -1184463 true false 219 204 42
+Circle -1184463 true false 39 204 42
+Rectangle -1184463 true false 45 75 255 240
+Rectangle -1184463 true false 39 87 54 222
+Rectangle -1184463 true false 246 85 261 220
+Rectangle -1184463 true false 60 70 243 98
+Rectangle -1184463 true false 57 218 240 246
+Rectangle -7500403 true false 75 29 226 72
+Rectangle -1 true true 51 107 246 218
+Line -16777216 false 63 129 63 186
+Line -16777216 false 80 129 80 186
+Line -16777216 false 65 158 79 158
+Circle -16777216 false false 85 140 43
+Line -16777216 false 134 135 135 185
+Line -16777216 false 134 137 154 184
+Line -16777216 false 154 185 153 135
+Line -16777216 false 168 134 168 186
+Line -16777216 false 169 136 182 136
+Line -16777216 false 169 160 179 160
+Line -16777216 false 168 185 183 185
+Line -16777216 false 193 134 205 150
+Line -16777216 false 206 152 217 132
+Line -16777216 false 207 154 208 185
+
 house
 false
 0
@@ -530,29 +576,32 @@ false
 Polygon -7500403 true true 150 210 135 195 120 210 60 210 30 195 60 180 60 165 15 135 30 120 15 105 40 104 45 90 60 90 90 105 105 120 120 120 105 60 120 60 135 30 150 15 165 30 180 60 195 60 180 120 195 120 210 105 240 90 255 90 263 104 285 105 270 120 285 135 240 165 240 180 270 195 240 210 180 210 165 195
 Polygon -7500403 true true 135 195 135 240 120 255 105 255 105 285 135 285 165 240 165 195
 
-line
-true
-0
-Line -7500403 true 150 0 150 300
-
-line half
-true
-0
-Line -7500403 true 150 0 150 150
-
-pentagon
+pete
 false
-0
-Polygon -7500403 true true 150 15 15 120 60 285 240 285 285 120
-
-person
-false
-0
-Circle -7500403 true true 110 5 80
-Polygon -7500403 true true 105 90 120 195 90 285 105 300 135 300 150 225 165 300 195 300 210 285 180 195 195 90
-Rectangle -7500403 true true 127 79 172 94
-Polygon -7500403 true true 195 90 240 150 225 180 165 105
-Polygon -7500403 true true 105 90 60 150 75 180 135 105
+13
+Polygon -2064490 true true 105 90 120 195 90 285 105 300 135 300 150 225 165 300 195 300 210 285 180 195 195 90
+Polygon -1 true false 60 195 90 210 114 154 120 195 180 195 187 157 210 210 240 195 195 90 165 90 150 105 150 150 135 90 105 90
+Circle -2064490 true true 110 5 80
+Rectangle -2064490 true true 127 79 172 94
+Polygon -1 true false 120 90 120 180 120 195 90 285 105 300 135 300 150 225 165 300 195 300 210 285 180 195 180 90 172 89 165 135 135 135 127 90
+Polygon -1 true false 115 2 112 19 70 31 70 38 108 46 116 32 143 25 179 24 187 34 223 21 221 12 177 14 166 -2
+Rectangle -7500403 true false 225 209 258 255
+Rectangle -16777216 false false 115 24 182 99
+Line -16777216 false 127 26 127 95
+Line -16777216 false 142 24 143 96
+Line -16777216 false 156 27 157 96
+Line -16777216 false 167 25 168 96
+Line -16777216 false 115 76 181 75
+Line -16777216 false 115 85 182 85
+Line -16777216 false 117 60 180 60
+Line -16777216 false 116 45 179 45
+Circle -7500403 true false 222 188 36
+Polygon -7500403 true false 249 211 257 217 276 188 268 184 247 195
+Polygon -6459832 true false 226 204 199 205 227 250
+Circle -16777216 true false 143 173 10
+Circle -16777216 true false 142 151 10
+Line -16777216 false 120 195 179 195
+Line -16777216 false 115 34 178 34
 
 plant
 false
@@ -566,30 +615,30 @@ Polygon -7500403 true true 135 105 90 60 45 45 75 105 135 135
 Polygon -7500403 true true 165 105 165 135 225 105 255 45 210 60
 Polygon -7500403 true true 135 90 120 45 150 15 180 45 165 90
 
-square
-false
-0
-Rectangle -7500403 true true 30 30 270 270
-
-square 2
-false
-0
-Rectangle -7500403 true true 30 30 270 270
-Rectangle -16777216 true false 60 60 240 240
-
-star
-false
-0
-Polygon -7500403 true true 151 1 185 108 298 108 207 175 242 282 151 216 59 282 94 175 3 108 116 108
-
-target
-false
-0
-Circle -7500403 true true 0 0 300
-Circle -16777216 true false 30 30 240
-Circle -7500403 true true 60 60 180
-Circle -16777216 true false 90 90 120
-Circle -7500403 true true 120 120 60
+queen
+true
+6
+Circle -13840069 true true 114 48 72
+Circle -13840069 true true 101 112 98
+Circle -16777216 true false 107 79 86
+Line -13840069 true 150 70 105 30
+Line -13840069 true 150 70 195 30
+Circle -13840069 true true 109 170 78
+Circle -13840069 true true 125 230 50
+Polygon -7500403 true false 120 120 60 195 60 210 75 225 105 225 120 210 135 135 120 120
+Polygon -7500403 true false 180 120 240 195 240 210 225 225 195 225 180 210 165 135 180 120
+Circle -16777216 true false 116 58 19
+Circle -16777216 true false 163 56 19
+Circle -16777216 true false 112 69 19
+Circle -16777216 true false 168 67 19
+Circle -13840069 true true 115 199 70
+Circle -13791810 true false 121 95 60
+Circle -13840069 true true 137 267 26
+Circle -13840069 true true 132 253 34
+Line -16777216 false 117 228 181 227
+Line -16777216 false 126 258 174 256
+Line -16777216 false 166 275 133 276
+Line -16777216 false 123 192 176 190
 
 tree
 false
@@ -600,55 +649,6 @@ Circle -7500403 true true 65 21 108
 Circle -7500403 true true 116 41 127
 Circle -7500403 true true 45 90 120
 Circle -7500403 true true 104 74 152
-
-triangle
-false
-0
-Polygon -7500403 true true 150 30 15 255 285 255
-
-triangle 2
-false
-0
-Polygon -7500403 true true 150 30 15 255 285 255
-Polygon -16777216 true false 151 99 225 223 75 224
-
-truck
-false
-0
-Rectangle -7500403 true true 4 45 195 187
-Polygon -7500403 true true 296 193 296 150 259 134 244 104 208 104 207 194
-Rectangle -1 true false 195 60 195 105
-Polygon -16777216 true false 238 112 252 141 219 141 218 112
-Circle -16777216 true false 234 174 42
-Rectangle -7500403 true true 181 185 214 194
-Circle -16777216 true false 144 174 42
-Circle -16777216 true false 24 174 42
-Circle -7500403 false true 24 174 42
-Circle -7500403 false true 144 174 42
-Circle -7500403 false true 234 174 42
-
-turtle
-true
-0
-Polygon -10899396 true false 215 204 240 233 246 254 228 266 215 252 193 210
-Polygon -10899396 true false 195 90 225 75 245 75 260 89 269 108 261 124 240 105 225 105 210 105
-Polygon -10899396 true false 105 90 75 75 55 75 40 89 31 108 39 124 60 105 75 105 90 105
-Polygon -10899396 true false 132 85 134 64 107 51 108 17 150 2 192 18 192 52 169 65 172 87
-Polygon -10899396 true false 85 204 60 233 54 254 72 266 85 252 107 210
-Polygon -7500403 true true 119 75 179 75 209 101 224 135 220 225 175 261 128 261 81 224 74 135 88 99
-
-wheel
-false
-0
-Circle -7500403 true true 3 3 294
-Circle -16777216 true false 30 30 240
-Line -7500403 true 150 285 150 15
-Line -7500403 true 15 150 285 150
-Circle -7500403 true true 120 120 60
-Line -7500403 true 216 40 79 269
-Line -7500403 true 40 84 269 221
-Line -7500403 true 40 216 269 79
-Line -7500403 true 84 40 221 269
 
 x
 false
