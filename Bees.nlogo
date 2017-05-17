@@ -121,7 +121,7 @@ to move-thru-field    ;; turtle procedure
     ifelse (random 25 = 0)
     ;; add some additional randomness to the moth's movement, this allows some small
     ;; probability that the bee might "escape" from the flower.
-    ;; TODO increase this value so that bees can leave the flower and go to the hive
+    ;; Increase this value so that bees can leave the flower and go to the hive
     [
       rt flutter-amount 60
     ]
