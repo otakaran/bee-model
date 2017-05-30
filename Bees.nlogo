@@ -17,11 +17,11 @@ flowers-own
 
 bees-own
 [
-  ;; +1 means the bees turn to the right to try to evade a bright light
-  ;; (and thus circle the light source clockwise). -1 means the moths
-  ;; turn to the left (and circle the light counter-clockwise)
+  ;; +1 means the bee turns to the right to try to evade a bright light
+  ;; (and thus circle the light source clockwise). -1 means the bee
+  ;; turns to the left (and circle the light counter-clockwise)
   ;; The direction tendency is assigned to each bee when it is created and does not
-  ;; change during the moth's lifetime.
+  ;; change during the bee's lifetime.
   direction
 ]
 
@@ -68,17 +68,15 @@ end
 to make-flowers [ number ]
   create-flowers number [
     set color white
-    jump 10 + random-float (max-pxcor - 30)
+    jump max-pxcor
     set intensity (random luminance + 20)
     set size 20
-    loop [
-    if (i >= caffeine-flowers)
-      [
-        stop
-      ]
-      ;set i (i + 1)
+    ;; Time to caffeinate some plants (user specified amount)
+    if (i < caffeine-flowers) [
       set color red
+      set intensity (100 * caffeine-amount + (random luminance + 20))
     ]
+    set i (i + 1)
   ]
 end
 
@@ -96,7 +94,6 @@ end
 to make-beehives [ number ]
   create-beehives number [
     set color red
-    jump 10 + random-float (max-pxcor - 30)
     set size 40
   ]
 end
@@ -176,11 +173,11 @@ end
 GRAPHICS-WINDOW
 280
 10
-690
-421
+886
+617
 -1
 -1
-2.0
+2.98
 1
 10
 1
@@ -226,7 +223,7 @@ luminance
 luminance
 1
 10
-3.0
+10.0
 1
 1
 NIL
@@ -329,11 +326,48 @@ caffeine-flowers
 caffeine-flowers
 0
 number-flowers
-4.0
+3.0
 1
 1
 NIL
 HORIZONTAL
+
+SLIDER
+53
+322
+226
+355
+caffeine-amount
+caffeine-amount
+.1
+1
+0.2
+.1
+1
+ M
+HORIZONTAL
+
+PLOT
+896
+10
+1410
+293
+Plant-Bee Density
+Plant
+Num Bees
+0.0
+100.0
+0.0
+10.0
+true
+true
+"" ""
+PENS
+"Flower 1" 100.0 0 -2139308 true "" "let my-neighbors 0\nlet num-neighbors 0\nask flower 0 [\n    set my-neighbors (other turtles) in-radius 3\n    set num-neighbors count my-neighbors\n  ]\nplot num-neighbors"
+"Flower 2" 1.0 0 -817084 true "" "let my-neighbors 0\nlet num-neighbors 0\nask flower 1 [\n    set my-neighbors (other turtles) in-radius 3\n    set num-neighbors count my-neighbors\n  ]\nplot num-neighbors"
+"Flower 3" 1.0 0 -987046 true "" "let my-neighbors 0\nlet num-neighbors 0\nask flower 2 [\n    set my-neighbors (other turtles) in-radius 3\n    set num-neighbors count my-neighbors\n  ]\nplot num-neighbors"
+"Flower 4" 1.0 0 -8732573 true "" "let my-neighbors 0\nlet num-neighbors 0\nask flower 3 [\n    set my-neighbors (other turtles) in-radius 3\n    set num-neighbors count my-neighbors\n  ]\nplot num-neighbors"
+"Flower 5" 1.0 0 -8990512 true "" "let my-neighbors 0\nlet num-neighbors 0\nask flower 4 [\n    set my-neighbors (other turtles) in-radius 3\n    set num-neighbors count my-neighbors\n  ]\nplot num-neighbors"
 
 @#$#@#$#@
 ## WHAT IS IT?
