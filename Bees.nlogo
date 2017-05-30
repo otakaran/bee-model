@@ -4,7 +4,9 @@ breed [ beehives beehive]
 
 globals
 [
-  scale-factor  ;; to control the form of the light field
+  scale-factor  ;; to control the form of the slower field
+  days-elapsed
+  i
 ]
 
 flowers-own
@@ -41,6 +43,8 @@ to setup
   set-default-shape bees "bee 2"
   set-default-shape beehives "beehive1"
   set scale-factor 50
+  set days-elapsed 0
+  set i 0
   if number-flowers > 0
   [
     make-flowers number-flowers
@@ -53,6 +57,7 @@ end
 
 to go
   ask bees [ move-thru-field ]
+  set days-elapsed (ticks / 100)
   tick
 end
 
@@ -64,8 +69,16 @@ to make-flowers [ number ]
   create-flowers number [
     set color white
     jump 10 + random-float (max-pxcor - 30)
-    set intensity random luminance + 20
+    set intensity (random luminance + 20)
     set size 20
+    loop [
+    if (i >= caffeine-flowers)
+      [
+        stop
+      ]
+      ;set i (i + 1)
+      set color red
+    ]
   ]
 end
 
@@ -188,27 +201,27 @@ ticks
 30.0
 
 BUTTON
-73
+40
 157
-139
+106
 190
-NIL
+Reset
 setup
 NIL
 1
 T
 OBSERVER
 NIL
-NIL
+R
 NIL
 NIL
 1
 
 SLIDER
-140
-115
-262
-148
+124
+290
+246
+323
 luminance
 luminance
 1
@@ -220,27 +233,27 @@ NIL
 HORIZONTAL
 
 BUTTON
-141
+110
 157
-204
+243
 190
-NIL
+Run Simulation
 go
 T
 1
 T
 OBSERVER
 NIL
-NIL
+R
 NIL
 NIL
 0
 
 SLIDER
-16
-115
-138
-148
+47
+76
+169
+109
 number-flowers
 number-flowers
 0
@@ -252,10 +265,10 @@ NIL
 HORIZONTAL
 
 SLIDER
-54
-80
-226
-113
+46
+356
+218
+389
 number-bees
 number-bees
 1
@@ -294,6 +307,32 @@ turn-angle
 5
 1
 degrees
+HORIZONTAL
+
+MONITOR
+59
+28
+153
+73
+Days Elapsed
+days-elapsed
+0
+1
+11
+
+SLIDER
+29
+111
+201
+144
+caffeine-flowers
+caffeine-flowers
+0
+number-flowers
+4.0
+1
+1
+NIL
 HORIZONTAL
 
 @#$#@#$#@
