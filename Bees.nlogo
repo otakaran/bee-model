@@ -67,13 +67,16 @@ end
 
 to make-flowers [ number ]
   create-flowers number [
+    let my-neighbors 0
+    let num-neighbors 0
     set color white
-    jump max-pxcor
+    jump max-pxcor - 10
     set intensity (random luminance + 20)
     set size 20
     ;; Time to caffeinate some plants (user specified amount)
     if (i < caffeine-flowers) [
       set color red
+      ;; TODO make this realistic
       set intensity (100 * caffeine-amount + (random luminance + 20))
     ]
     set i (i + 1)
@@ -103,7 +106,7 @@ to generate-field ;; patch procedure
   ;; every patch needs to check in with every flower
   ask flowers
     [ set-field myself ]
-  ;;set pcolor scale-color blue (sqrt total-flower-attraction) 0.1 ( sqrt ( 20 * max [intensity] of flowers ) )
+  ;; set pcolor scale-color blue (sqrt total-flower-attraction) 0.1 ( sqrt ( 20 * max [intensity] of flowers ) )
 end
 
 ;; do the calculations for the flower on one patch due to one flower
@@ -300,7 +303,7 @@ turn-angle
 turn-angle
 45
 180
-125.0
+120.0
 5
 1
 degrees
@@ -363,11 +366,11 @@ true
 true
 "" ""
 PENS
-"Flower 1" 100.0 0 -2139308 true "" "let my-neighbors 0\nlet num-neighbors 0\nask flower 0 [\n    set my-neighbors (other turtles) in-radius 3\n    set num-neighbors count my-neighbors\n  ]\nplot num-neighbors"
-"Flower 2" 1.0 0 -817084 true "" "let my-neighbors 0\nlet num-neighbors 0\nask flower 1 [\n    set my-neighbors (other turtles) in-radius 3\n    set num-neighbors count my-neighbors\n  ]\nplot num-neighbors"
-"Flower 3" 1.0 0 -987046 true "" "let my-neighbors 0\nlet num-neighbors 0\nask flower 2 [\n    set my-neighbors (other turtles) in-radius 3\n    set num-neighbors count my-neighbors\n  ]\nplot num-neighbors"
-"Flower 4" 1.0 0 -8732573 true "" "let my-neighbors 0\nlet num-neighbors 0\nask flower 3 [\n    set my-neighbors (other turtles) in-radius 3\n    set num-neighbors count my-neighbors\n  ]\nplot num-neighbors"
-"Flower 5" 1.0 0 -8990512 true "" "let my-neighbors 0\nlet num-neighbors 0\nask flower 4 [\n    set my-neighbors (other turtles) in-radius 3\n    set num-neighbors count my-neighbors\n  ]\nplot num-neighbors"
+"Flower 1" 1.0 0 -2139308 true "" "let my-neighbors 0\nlet num-neighbors 0\nask flower 0 [\n    set my-neighbors (other turtles) in-radius 25\n    set num-neighbors count my-neighbors\n  ]\nplot num-neighbors"
+"Flower 2" 1.0 0 -817084 true "" "let my-neighbors 0\nlet num-neighbors 0\nask flower 1 [\n    set my-neighbors (other turtles) in-radius 25\n    set num-neighbors count my-neighbors\n  ]\nplot num-neighbors"
+"Flower 3" 1.0 0 -987046 true "" "let my-neighbors 0\nlet num-neighbors 0\nask flower 2 [\n    set my-neighbors (other turtles) in-radius 25\n    set num-neighbors count my-neighbors\n  ]\nplot num-neighbors"
+"Flower 4" 1.0 0 -8732573 true "" "let my-neighbors 0\nlet num-neighbors 0\nask flower 3 [\n    set my-neighbors (other turtles) in-radius 25\n    set num-neighbors count my-neighbors\n  ]\nplot num-neighbors"
+"Flower 5" 1.0 0 -8990512 true "" "let my-neighbors 0\nlet num-neighbors 0\nask flower 4 [\n    set my-neighbors (other turtles) in-radius 25\n    set num-neighbors count my-neighbors\n  ]\nplot num-neighbors"
 
 @#$#@#$#@
 ## WHAT IS IT?
