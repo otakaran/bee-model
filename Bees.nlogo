@@ -4,7 +4,9 @@ breed [ beehives beehive]
 
 globals
 [
-  scale-factor  ;; to control the form of the light field
+  scale-factor  ;; to control the form of the slower field
+  days-elapsed
+  i
 ]
 
 flowers-own
@@ -15,11 +17,11 @@ flowers-own
 
 bees-own
 [
-  ;; +1 means the bees turn to the right to try to evade a bright light
-  ;; (and thus circle the light source clockwise). -1 means the moths
-  ;; turn to the left (and circle the light counter-clockwise)
+  ;; +1 means the bee turns to the right to try to evade a bright light
+  ;; (and thus circle the light source clockwise). -1 means the bee
+  ;; turns to the left (and circle the light counter-clockwise)
   ;; The direction tendency is assigned to each bee when it is created and does not
-  ;; change during the moth's lifetime.
+  ;; change during the bee's lifetime.
   direction
 ]
 
@@ -41,6 +43,8 @@ to setup
   set-default-shape bees "bee 2"
   set-default-shape beehives "beehive1"
   set scale-factor 50
+  set days-elapsed 0
+  set i 0
   if number-flowers > 0
   [
     make-flowers number-flowers
@@ -53,6 +57,7 @@ end
 
 to go
   ask bees [ move-thru-field ]
+  set days-elapsed (ticks / 100)
   tick
 end
 
@@ -62,10 +67,19 @@ end
 
 to make-flowers [ number ]
   create-flowers number [
+    let my-neighbors 0
+    let num-neighbors 0
     set color white
-    jump 10 + random-float (max-pxcor - 30)
-    set intensity random luminance + 20
+    jump max-pxcor - 10
+    set intensity (random luminance + 20)
     set size 20
+    ;; Time to caffeinate some plants (user specified amount)
+    if (i < caffeine-flowers) [
+      set color red
+      ;; TODO make this realistic
+      set intensity (100 * caffeine-amount + (random luminance + 20))
+    ]
+    set i (i + 1)
   ]
 end
 
@@ -83,7 +97,6 @@ end
 to make-beehives [ number ]
   create-beehives number [
     set color red
-    jump 10 + random-float (max-pxcor - 30)
     set size 40
   ]
 end
@@ -93,7 +106,7 @@ to generate-field ;; patch procedure
   ;; every patch needs to check in with every flower
   ask flowers
     [ set-field myself ]
-  ;;set pcolor scale-color blue (sqrt total-flower-attraction) 0.1 ( sqrt ( 20 * max [intensity] of flowers ) )
+  ;; set pcolor scale-color blue (sqrt total-flower-attraction) 0.1 ( sqrt ( 20 * max [intensity] of flowers ) )
 end
 
 ;; do the calculations for the flower on one patch due to one flower
@@ -163,11 +176,11 @@ end
 GRAPHICS-WINDOW
 280
 10
-690
-421
+886
+617
 -1
 -1
-2.0
+2.98
 1
 10
 1
@@ -188,59 +201,59 @@ ticks
 30.0
 
 BUTTON
-73
+40
 157
-139
+106
 190
-NIL
+Reset
 setup
 NIL
 1
 T
 OBSERVER
 NIL
-NIL
+R
 NIL
 NIL
 1
 
 SLIDER
-140
-115
-262
-148
+124
+290
+246
+323
 luminance
 luminance
 1
 10
-3.0
+10.0
 1
 1
 NIL
 HORIZONTAL
 
 BUTTON
-141
+110
 157
-204
+243
 190
-NIL
+Run Simulation
 go
 T
 1
 T
 OBSERVER
 NIL
-NIL
+R
 NIL
 NIL
 0
 
 SLIDER
-16
-115
-138
-148
+47
+76
+169
+109
 number-flowers
 number-flowers
 0
@@ -252,10 +265,10 @@ NIL
 HORIZONTAL
 
 SLIDER
-54
-80
-226
-113
+46
+356
+218
+389
 number-bees
 number-bees
 1
@@ -290,11 +303,74 @@ turn-angle
 turn-angle
 45
 180
-125.0
+120.0
 5
 1
 degrees
 HORIZONTAL
+
+MONITOR
+59
+28
+153
+73
+Days Elapsed
+days-elapsed
+0
+1
+11
+
+SLIDER
+29
+111
+201
+144
+caffeine-flowers
+caffeine-flowers
+0
+number-flowers
+3.0
+1
+1
+NIL
+HORIZONTAL
+
+SLIDER
+53
+322
+226
+355
+caffeine-amount
+caffeine-amount
+.1
+1
+0.2
+.1
+1
+ M
+HORIZONTAL
+
+PLOT
+896
+10
+1410
+293
+Plant-Bee Density
+Plant
+Num Bees
+0.0
+100.0
+0.0
+10.0
+true
+true
+"" ""
+PENS
+"Flower 1" 1.0 0 -2139308 true "" "let my-neighbors 0\nlet num-neighbors 0\nask flower 0 [\n    set my-neighbors (other turtles) in-radius 25\n    set num-neighbors count my-neighbors\n  ]\nplot num-neighbors"
+"Flower 2" 1.0 0 -817084 true "" "let my-neighbors 0\nlet num-neighbors 0\nask flower 1 [\n    set my-neighbors (other turtles) in-radius 25\n    set num-neighbors count my-neighbors\n  ]\nplot num-neighbors"
+"Flower 3" 1.0 0 -987046 true "" "let my-neighbors 0\nlet num-neighbors 0\nask flower 2 [\n    set my-neighbors (other turtles) in-radius 25\n    set num-neighbors count my-neighbors\n  ]\nplot num-neighbors"
+"Flower 4" 1.0 0 -8732573 true "" "let my-neighbors 0\nlet num-neighbors 0\nask flower 3 [\n    set my-neighbors (other turtles) in-radius 25\n    set num-neighbors count my-neighbors\n  ]\nplot num-neighbors"
+"Flower 5" 1.0 0 -8990512 true "" "let my-neighbors 0\nlet num-neighbors 0\nask flower 4 [\n    set my-neighbors (other turtles) in-radius 25\n    set num-neighbors count my-neighbors\n  ]\nplot num-neighbors"
 
 @#$#@#$#@
 ## WHAT IS IT?
