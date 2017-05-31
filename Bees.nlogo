@@ -80,6 +80,8 @@ to make-flowers [ number ]
       set intensity (100 * caffeine-amount + (random luminance + 20))
     ]
     set i (i + 1)
+ ask flowers [move-to one-of patches with [not any? turtles in-radius 75] ]
+
   ]
 end
 
