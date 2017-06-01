@@ -6,6 +6,7 @@ globals
 [
   scale-factor  ;; to control the form of the slower field
   days-elapsed
+  current-time
   i
 ]
 
@@ -44,6 +45,7 @@ to setup
   set-default-shape beehives "beehive1"
   set scale-factor 50
   set days-elapsed 0
+  set current-time "day"
   set i 0
   if number-flowers > 0
   [
@@ -56,8 +58,8 @@ to setup
 end
 
 to go
+  do-daynight-cycle
   ask bees [ move-thru-field ]
-  set days-elapsed (ticks / 100)
   tick
 end
 
@@ -67,8 +69,6 @@ end
 
 to make-flowers [ number ]
   create-flowers number [
-    let my-neighbors 0
-    let num-neighbors 0
     set color white
     jump max-pxcor - 10
     set intensity (random luminance + 20)
@@ -80,6 +80,8 @@ to make-flowers [ number ]
       set intensity (100 * caffeine-amount + (random luminance + 20))
     ]
     set i (i + 1)
+    ask flowers [move-to one-of patches with [not any? turtles in-radius 75] ]
+
   ]
 end
 
@@ -132,7 +134,7 @@ to move-thru-field    ;; turtle procedure
   ]
   [
     ifelse (random 25 = 0)
-    ;; add some additional randomness to the moth's movement, this allows some small
+    ;; add some additional randomness to the bee's movement, this allows some small
     ;; probability that the bee might "escape" from the flower.
     ;; Increase this value so that bees can leave the flower and go to the hive
     [
@@ -158,7 +160,21 @@ to move-thru-field    ;; turtle procedure
 end
 
 to maximize  ;; turtle procedure
-  face max-one-of patches in-radius 1 [total-flower-attraction]
+  ifelse (current-time = "day")
+  [ face max-one-of patches in-radius 1 [total-flower-attraction] ]
+  [ face beehive 25 ]
+
+end
+
+to do-daynight-cycle  ;; updates the location of the bees based on time of day and also track the day and time of day
+  set days-elapsed (ticks / 1000)
+  ifelse ((ticks mod 1000) = 0)
+    [ set current-time "night" ]
+    [
+    if ((ticks mod 500) = 0) [
+      set current-time "day"
+    ]
+  ]
 end
 
 to-report flutter-amount [limit]
@@ -168,7 +184,7 @@ to-report flutter-amount [limit]
   report random-float (2 * limit) - limit
 end
 
-; Copyright 2017 Otakar Andrysek and Stanislov Lyakhov
+; Copyright 2017 Otakar Andrysek.
 ; Copyright 2005 Uri Wilensky.
 ; See Info tab or GitHub repository for full copyright and license.
 ; https://github.com/otakar-sst/bee-model
@@ -226,7 +242,7 @@ luminance
 luminance
 1
 10
-10.0
+3.0
 1
 1
 NIL
@@ -273,7 +289,7 @@ number-bees
 number-bees
 1
 20
-17.0
+20.0
 1
 1
 NIL
@@ -288,7 +304,7 @@ sensitivity
 sensitivity
 1
 3
-1.75
+3.0
 0.25
 1
 NIL
@@ -303,7 +319,7 @@ turn-angle
 turn-angle
 45
 180
-120.0
+130.0
 5
 1
 degrees
@@ -329,7 +345,7 @@ caffeine-flowers
 caffeine-flowers
 0
 number-flowers
-3.0
+5.0
 1
 1
 NIL
@@ -344,7 +360,7 @@ caffeine-amount
 caffeine-amount
 .1
 1
-0.2
+0.1
 .1
 1
  M
@@ -371,6 +387,17 @@ PENS
 "Flower 3" 1.0 0 -987046 true "" "let my-neighbors 0\nlet num-neighbors 0\nask flower 2 [\n    set my-neighbors (other turtles) in-radius 25\n    set num-neighbors count my-neighbors\n  ]\nplot num-neighbors"
 "Flower 4" 1.0 0 -8732573 true "" "let my-neighbors 0\nlet num-neighbors 0\nask flower 3 [\n    set my-neighbors (other turtles) in-radius 25\n    set num-neighbors count my-neighbors\n  ]\nplot num-neighbors"
 "Flower 5" 1.0 0 -8990512 true "" "let my-neighbors 0\nlet num-neighbors 0\nask flower 4 [\n    set my-neighbors (other turtles) in-radius 25\n    set num-neighbors count my-neighbors\n  ]\nplot num-neighbors"
+
+MONITOR
+163
+24
+256
+69
+NIL
+current-time
+17
+1
+11
 
 @#$#@#$#@
 ## WHAT IS IT?
