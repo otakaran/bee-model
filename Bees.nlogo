@@ -58,8 +58,8 @@ to setup
 end
 
 to go
-  ask bees [ move-thru-field ]
   do-daynight-cycle
+  ask bees [ move-thru-field ]
   tick
 end
 
@@ -160,15 +160,18 @@ to move-thru-field    ;; turtle procedure
 end
 
 to maximize  ;; turtle procedure
-  face max-one-of patches in-radius 1 [total-flower-attraction]
+  ifelse (current-time = "day")
+  [ face max-one-of patches in-radius 1 [total-flower-attraction] ]
+  [ face beehive 25 ]
+
 end
 
 to do-daynight-cycle  ;; updates the location of the bees based on time of day and also track the day and time of day
   set days-elapsed (ticks / 1000)
-  ifelse ((days-elapsed mod 1000) = 0)
+  ifelse ((ticks mod 1000) = 0)
     [ set current-time "night" ]
     [
-    if ((days-elapsed mod 500) = 0) [
+    if ((ticks mod 500) = 0) [
       set current-time "day"
     ]
   ]
@@ -239,7 +242,7 @@ luminance
 luminance
 1
 10
-10.0
+3.0
 1
 1
 NIL
@@ -301,7 +304,7 @@ sensitivity
 sensitivity
 1
 3
-1.75
+3.0
 0.25
 1
 NIL
@@ -316,7 +319,7 @@ turn-angle
 turn-angle
 45
 180
-120.0
+130.0
 5
 1
 degrees
@@ -342,7 +345,7 @@ caffeine-flowers
 caffeine-flowers
 0
 number-flowers
-2.0
+5.0
 1
 1
 NIL
@@ -357,7 +360,7 @@ caffeine-amount
 caffeine-amount
 .1
 1
-0.8
+0.1
 .1
 1
  M
